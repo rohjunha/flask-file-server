@@ -10,21 +10,44 @@ import json
 import mimetypes
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
-root = os.path.expanduser('~')
+root = os.path.join(os.path.expanduser('~'), 'evaluations')
 
 ignored = ['.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd', '.Spotlight-V100', '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
-datatypes = {'audio': 'm4a,mp3,oga,ogg,webma,wav', 'archive': '7z,zip,rar,gz,tar', 'image': 'gif,ico,jpe,jpeg,jpg,png,svg,webp', 'pdf': 'pdf', 'quicktime': '3g2,3gp,3gp2,3gpp,mov,qt', 'source': 'atom,bat,bash,c,cmd,coffee,css,hml,js,json,java,less,markdown,md,php,pl,py,rb,rss,sass,scpt,swift,scss,sh,xml,yml,plist', 'text': 'txt', 'video': 'mp4,m4v,ogv,webm', 'website': 'htm,html,mhtm,mhtml,xhtm,xhtml'}
-icontypes = {'fa-music': 'm4a,mp3,oga,ogg,webma,wav', 'fa-archive': '7z,zip,rar,gz,tar', 'fa-picture-o': 'gif,ico,jpe,jpeg,jpg,png,svg,webp', 'fa-file-text': 'pdf', 'fa-film': '3g2,3gp,3gp2,3gpp,mov,qt', 'fa-code': 'atom,plist,bat,bash,c,cmd,coffee,css,hml,js,json,java,less,markdown,md,php,pl,py,rb,rss,sass,scpt,swift,scss,sh,xml,yml', 'fa-file-text-o': 'txt', 'fa-film': 'mp4,m4v,ogv,webm', 'fa-globe': 'htm,html,mhtm,mhtml,xhtm,xhtml'}
+datatypes = {
+    'audio': 'm4a,mp3,oga,ogg,webma,wav',
+    'archive': '7z,zip,rar,gz,tar',
+    'image': 'gif,ico,jpe,jpeg,jpg,png,svg,webp',
+    'pdf': 'pdf',
+    'quicktime': '3g2,3gp,3gp2,3gpp,mov,qt',
+    'source': 'atom,bat,bash,c,cmd,coffee,css,hml,js,json,java,less,markdown,md,php,pl,py,rb,rss,sass,scpt,swift,scss,sh,xml,yml,plist',
+    'text': 'txt',
+    'video': 'mp4,m4v,ogv,webm',
+    'website': 'htm,html,mhtm,mhtml,xhtm,xhtml'
+}
+icontypes = {
+    'fa-music': 'm4a,mp3,oga,ogg,webma,wav',
+    'fa-archive': '7z,zip,rar,gz,tar',
+    'fa-picture-o': 'gif,ico,jpe,jpeg,jpg,png,svg,webp',
+    'fa-file-text': 'pdf',
+    'fa-film': '3g2,3gp,3gp2,3gpp,mov,qt',
+    'fa-code': 'atom,plist,bat,bash,c,cmd,coffee,css,hml,js,json,java,less,markdown,md,php,pl,py,rb,rss,sass,scpt,swift,scss,sh,xml,yml',
+    'fa-file-text-o': 'txt',
+    'fa-film': 'mp4,m4v,ogv,webm',
+    'fa-globe': 'htm,html,mhtm,mhtml,xhtm,xhtml'
+}
+
 
 @app.template_filter('size_fmt')
 def size_fmt(size):
     return humanize.naturalsize(size)
+
 
 @app.template_filter('time_fmt')
 def time_desc(timestamp):
     mdate = datetime.fromtimestamp(timestamp)
     str = mdate.strftime('%Y-%m-%d %H:%M:%S')
     return str
+
 
 @app.template_filter('data_fmt')
 def data_fmt(filename):
@@ -33,6 +56,7 @@ def data_fmt(filename):
         if filename.split('.')[-1] in exts:
             t = type
     return t
+
 
 @app.template_filter('icon_fmt')
 def icon_fmt(filename):
@@ -53,6 +77,7 @@ def get_type(mode):
     else:
         type = 'file'
     return type
+
 
 def partial_response(path, start, end=None):
     file_size = os.path.getsize(path)
@@ -83,6 +108,7 @@ def partial_response(path, start, end=None):
     )
     return response
 
+
 def get_range(request):
     range = request.headers.get('Range')
     m = re.match('bytes=(?P<start>\d+)-(?P<end>\d+)?', range)
@@ -95,6 +121,7 @@ def get_range(request):
         return start, end
     else:
         return 0, None
+
 
 class PathView(MethodView):
     def get(self, p=''):
@@ -156,6 +183,7 @@ class PathView(MethodView):
         res = make_response(json.JSONEncoder().encode(info), 200)
         res.headers.add('Content-type', 'application/json')
         return res
+
 
 path_view = PathView.as_view('path_view')
 app.add_url_rule('/', view_func=path_view)
