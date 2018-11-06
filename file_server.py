@@ -10,9 +10,11 @@ import json
 import mimetypes
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
-root = os.path.join(os.path.expanduser('~'), 'evaluations')
+root = os.path.join(os.path.expanduser('~'), 'evaluation')
 
-ignored = ['.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd', '.Spotlight-V100', '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
+ignored = [
+    '.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd',
+    '.Spotlight-V100', '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
 datatypes = {
     'audio': 'm4a,mp3,oga,ogg,webma,wav',
     'archive': '7z,zip,rar,gz,tar',
@@ -66,10 +68,12 @@ def icon_fmt(filename):
             i = icon
     return i
 
+
 @app.template_filter('humanize')
 def time_humanize(timestamp):
     mdate = datetime.utcfromtimestamp(timestamp)
     return humanize.naturaltime(mdate)
+
 
 def get_type(mode):
     if stat.S_ISDIR(mode) or stat.S_ISLNK(mode):
@@ -81,16 +85,19 @@ def get_type(mode):
 
 def partial_response(path, start, end=None):
     file_size = os.path.getsize(path)
+    app.logger.info('filesize: {}'.format(file_size))
 
     if end is None:
         end = file_size - start - 1
     end = min(end, file_size - 1)
     length = end - start + 1
+    app.logger.info('length: {}'.format(length))
 
     with open(path, 'rb') as fd:
-        fd.seek(start)
-        bytes = fd.read(length)
-    assert len(bytes) == length
+        bytes = fd.read(file_size)
+        # fd.seek(start)
+        # bytes = fd.read(length)
+    # assert len(bytes) == length
 
     response = Response(
         bytes,
@@ -99,8 +106,8 @@ def partial_response(path, start, end=None):
         direct_passthrough=True,
     )
     response.headers.add(
-        'Content-Range', 'bytes {0}-{1}/{2}'.format(
-            start, end, file_size,
+        'Content-Range', 'bytes {0}-{1}/{2}'.format(0, file_size - 1, file_size
+            # start, end, file_size,
         ),
     )
     response.headers.add(
@@ -154,7 +161,9 @@ class PathView(MethodView):
         elif os.path.isfile(path):
             if 'Range' in request.headers:
                 start, end = get_range(request)
+                app.logger.info('{}, {}'.format(start, end))
                 res = partial_response(path, start, end)
+                app.logger.info(res.json)
             else:
                 res = send_file(path)
                 res.headers.add('Content-Disposition', 'attachment')
