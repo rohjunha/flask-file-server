@@ -194,8 +194,9 @@ class PathView(MethodView):
         return res
 
 
-path_view = PathView.as_view('path_view')
-app.add_url_rule('/', view_func=path_view)
-app.add_url_rule('/<path:p>', view_func=path_view)
+if __name__ == '__main__':
+    path_view = PathView.as_view('path_view')
+    app.add_url_rule('/', view_func=path_view)
+    app.add_url_rule('/<path:p>', view_func=path_view)
+    app.run('0.0.0.0', 8000, threaded=True, debug=True)
 
-app.run('0.0.0.0', 8000, threaded=True, debug=False)
