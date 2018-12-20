@@ -10,6 +10,7 @@ import json
 import mimetypes
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
+# root = os.path.expanduser('~')
 root = os.path.join(os.path.expanduser('~'), 'evaluation')
 
 ignored = [
@@ -194,9 +195,7 @@ class PathView(MethodView):
         return res
 
 
-if __name__ == '__main__':
-    path_view = PathView.as_view('path_view')
-    app.add_url_rule('/', view_func=path_view)
-    app.add_url_rule('/<path:p>', view_func=path_view)
-    app.run('0.0.0.0', 8000, threaded=True, debug=True)
-
+path_view = PathView.as_view('path_view')
+app.add_url_rule('/', view_func=path_view)
+app.add_url_rule('/<path:p>', view_func=path_view)
+app.run('0.0.0.0', 8000, threaded=True, debug=False)
