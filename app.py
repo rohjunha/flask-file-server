@@ -10,8 +10,8 @@ import json
 import mimetypes
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
-# root = os.path.expanduser('~')
-root = os.path.join(os.path.expanduser('~'), 'evaluation')
+root = os.path.join(os.path.expanduser('~'), 'evaluations')
+#root = '/home/junha/projects/.evaluations'
 
 ignored = [
     '.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd',
@@ -198,4 +198,4 @@ class PathView(MethodView):
 path_view = PathView.as_view('path_view')
 app.add_url_rule('/', view_func=path_view)
 app.add_url_rule('/<path:p>', view_func=path_view)
-app.run('0.0.0.0', 8000, threaded=True, debug=False)
+app.run('0.0.0.0', 5000, threaded=True, debug=True)
